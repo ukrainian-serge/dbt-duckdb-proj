@@ -5,7 +5,6 @@
     ],
 
     
-
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     
@@ -14,19 +13,14 @@
 
     "python.analysis.autoImportCompletions": true,
 
-    "files.exclude": {
-        "**/.git": false
-    },
+    // "files.exclude": {
+    //     "**/.git": false
+    // },
 
     "files.associations": {
         "*.sql": "jinja-sql",
-        // "*.yml": "jinja-yml",
-        // "*.md": "jinja-md"
     },
 
-    // "yaml.schemas": {
-    //     "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/dbt_yml_files.json": "*.yml"
-    // }
 
     "yaml.schemas": {
         "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/latest/dbt_yml_files-latest.json": [
@@ -48,53 +42,12 @@
             "packages.yml"
         ]
     },
-    "sqltools.connections": [
-        {
-            "name": "DEV",
-            "authenticator": "CLI",
-            "location": "us",
-            "previewLimit": 100,
-            "driver": "BigQuery",
-            "projectId": "dbt-dev-503215"
-        },
-        {
-            "name": "PROD",
-            "authenticator": "CLI",
-            "location": "us",
-            "previewLimit": 100,
-            "driver": "BigQuery",
-            "projectId": "dbt-prod-503215"
-        },
-        {
-            "name": "RAW",
-            "authenticator": "CLI",
-            "location": "us",
-            "previewLimit": 100,
-            "driver": "BigQuery",
-            "projectId": "raw-data-503215"
-        },
-        {
-            "name": "DuckDB",
-            "accessMode": "Read/Write",
-            "duckdbOptions": {
-                "enable_external_access": true,
-                "autoinstall_known_extensions": true,
-                "autoload_known_extensions": true,
-                "allow_community_extensions": true
-            },
-            "previewLimit": 50,
-            "driver": "DuckDB",
-            "database": "${workspaceFolder:dbt-duckdb-proj}/warehouse.duckdb"
-        }
-    ],
-    // "dbt.dbtMajorVersion": "v1",
+    "dbt.dbtMajorVersion": "v2",
     "workbench.editorAssociations": {
         "*.copilotmd": "vscode.markdown.preview.editor",
-        "*.parquet": "duckdb.dataFileViewer",
-        "*.csv": "duckdb.dataFileViewer",
-        "*.tsv": "duckdb.dataFileViewer",
-        "*.xlsx": "duckdb.dataFileViewer"
+        "*.parquet": "default",
+        "*.csv": "default",
+        "*.tsv": "default",
+        "*.xlsx": "default"
     }
-
-
 }
