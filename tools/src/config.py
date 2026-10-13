@@ -1,108 +1,53 @@
 from dataclasses import dataclass
-import pandas as pd
+from datetime import datetime
 import os
 from pathlib import Path
-from datetime import datetime
-from google.cloud import bigquery
-from google.oauth2 import service_account
+
+import pandas as pd
 from dotenv import load_dotenv
-import typer
-from typing import Optional
 
 
 CONFIG_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CONFIG_DIR.parents[1]  # Adjust based on directory depth
+PROJECT_ROOT = CONFIG_DIR.parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
 DEFAULT_DATA_DIR = PROJECT_ROOT / "jaffle_raw_data"
+DEFAULT_WAREHOUSE_PATH = PROJECT_ROOT / "warehouse.duckdb"
 
 
 @dataclass(frozen=False)
 class Config:
-# 1. Populated from environment variables (.env) via load_config()
-    project_id: str
-    dataset_id: str
-    key_path: Path
-
-    # 2. Populated from Typer CLI flags in main()
-    write_disposition: str = "WRITE_TRUNCATE"
+    warehouse_path: Path
+    data_dir: Path
+    write_mode: str = "replace"
     generate: bool = False
     prefix: str = "raw"
-    data_dir: Path = Path("./data")
-
-# Annotate as datetime directly without Optional
     date_from: datetime = datetime.now()
     date_to: datetime = datetime.now()
-
-    # 3. Attached during BigQuery setup
-    client: Optional[bigquery.Client] = None
-    dataset_ref: Optional[str] = None
-
-    calculated_years: Optional[int] = None
-
+    calculated_years: int | None = None
     s_dst: pd.Series | None = None
-
     order_unique_id: pd.arrays.ArrowStringArray | None = None
     order_unique_cust: pd.arrays.ArrowStringArray | None = None
 
 
-
 def load_config() -> Config:
-    """Loads .env and validates required configuration."""
+    """Load optional local paths from .env, defaulting to project-local paths."""
     if ENV_PATH.exists():
         load_dotenv(dotenv_path=ENV_PATH, override=True)
 
-    key_path = os.getenv("GCP_SA_RAW_CREDS")
-    project_id = os.getenv("BQ_RAW_PROJECT_ID")
-    dataset_id = os.getenv("BQ_RAW_DATASET")
-    raw_data_dir = os.getenv("JAFGEN_DATA_DIR")
-
-    # 1. Validation & Early Exit
-    if not key_path or not project_id or not dataset_id:
-        missing = []
-        if not key_path: missing.append("GCP_SA_RAW_CREDS")
-        if not project_id: missing.append("BQ_RAW_PROJECT_ID")
-        if not dataset_id: missing.append("BQ_RAW_DATASET")
-        typer.echo(f"❌ Missing required environment variables: {', '.join(missing)}", err=True)
-        raise typer.Exit(code=1)
-
-    # 2. Convert and resolve paths safely
-    key_path = Path(key_path).expanduser().resolve()
-    
-    if not key_path.exists():
-        typer.echo(f"❌ Service account key file not found at: {key_path}", err=True)
-        raise typer.Exit(code=1)
-
-    # 3. Explicitly construct data_dir Path
-    if raw_data_dir:
-        data_dir = Path(raw_data_dir).expanduser().resolve(strict=False)
-    else:
-        data_dir = DEFAULT_DATA_DIR.resolve(strict=False)
-
-    # Pyright now recognizes key_path, project_id, dataset_id, and data_dir 
-    # as strictly matching the Config class dataclass types.
     return Config(
-        key_path=key_path,
-        project_id=project_id,
-        dataset_id=dataset_id,
-        data_dir=data_dir
+        warehouse_path=resolve_project_path(
+            os.getenv("DUCKDB_PATH"), DEFAULT_WAREHOUSE_PATH
+        ),
+        data_dir=resolve_project_path(os.getenv("JAFGEN_DATA_DIR"), DEFAULT_DATA_DIR),
     )
 
 
-def get_bigquery_client(cfg: Config) -> None:
-    """Retrieves BigQuery client and ensures target dataset exists."""
-    credentials = service_account.Credentials.from_service_account_file(cfg.key_path)
-    client = bigquery.Client(credentials=credentials, project=cfg.project_id)
+def resolve_project_path(value: str | None, default: Path) -> Path:
+    """Resolve configured relative paths from the project root."""
+    if value is None:
+        return default
 
-    dataset_ref = f"{cfg.project_id}.{cfg.dataset_id}"
-
-    try:
-        client.get_dataset(dataset_ref)
-        print(f"🔍 Dataset '{dataset_ref}' exists.")
-    except Exception:
-        print(f"⚠️ Dataset '{dataset_ref}' not found. Creating it...")
-        client.create_dataset(bigquery.Dataset(dataset_ref))
-        print(f"✅ Dataset '{dataset_ref}' created.")
-
-    cfg.client = client
-    cfg.dataset_ref = dataset_ref
-# 
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    return path.resolve()

@@ -24,27 +24,8 @@ macros:
       - name: custom_schema_name
         type: string
         description: Optional custom schema name; ignored in dev target.
-      # - name: node
-        # type: object
-        # description: The dbt node object.
-
-  - name: grant_revoke
-    description: Grants or revokes BigQuery role access to a schema.
-    arguments:
-      - name: switch
-        type: boolean
-      - name: schema
-        type: string
-        description: Schema name (default target.dataset).
-      - name: database
-        type: string
-        description: Database name (default target.schema).
-      - name: role
-        type: string
-        description: BigQuery role (default roles/bigquery.dataViewer).
-      - name: principal
-        type: string
-        description: Email or service account to grant access.
+      - name: node
+        description: The dbt node being processed.
 
   - name: union_tables_by_prefix
     description: Discovers and logs tables matching a prefix pattern.
@@ -58,4 +39,3 @@ macros:
       - name: prefix
         type: string
         description: Table name prefix to match.
-

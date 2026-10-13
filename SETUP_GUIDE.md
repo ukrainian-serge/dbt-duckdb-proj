@@ -1,193 +1,94 @@
 # Project Setup Guide
 
-This document provied necessary and optional set up instructions for env files, debug and testing, and prod execution of dbt.
+This guide covers local development with the persistent DuckDB warehouse.
 
----
+## 1. Install dependencies
 
-## 1. GCP Project and Service Account Setup:
+Create and activate a Python environment, then install the project dependencies:
 
-**How to set up**:  
-1. Create GCP Project for your work.
-2. Create a service account for `DEV`.  
-The below is the roles and permssions I set up, I was indiscriminate, you could probably walk them back a bit:    
-    ```bash
-    ------------------------------------------
-    dbt Dev Service Account Roles (dev-sa-account@your-project-id.iam.gserviceaccount.com)
-    ------------------------------------------
-    roles/aiplatform.colabEnterpriseUser
-    roles/aiplatform.notebookRuntimeUser
-    roles/aiplatform.user
-    roles/bigquery.admin
-    roles/bigquery.dataEditor
-    roles/bigquery.jobUser
-    roles/dataproc.editor
-    roles/dataproc.serverlessEditor
-    roles/storage.objectAdmin
-    ```
-3. If you need to set up your `mcp.json` for Ai Agent help, these are the ones I set up. Very minimal:
+```bash
+python -m pip install -r requirements.txt
+dbt deps
+```
 
-    ```bash
-    ------------------------------------------
-    Ai Agent BQ Reader Roles (ai-sa-account@your-project-id.iam.gserviceaccount.com)
-    ------------------------------------------
-    roles/bigquery.dataViewer
-    roles/bigquery.metadataViewer
-    ```
+## 2. Configure dbt
 
-
-## 2. dbt Profiles Configuration
-
-**File location:** `~/.dbt/profiles.yml`   
+Create `~/.dbt/profiles.yml` and point it at this project's warehouse file. Use
+an absolute path for `path`:
 
 ```yaml
-# profiles.yml
 jaffle_shop:
-target: dev
-outputs:
-  dev:
-    type: bigquery  # We are using BigQuery for this course
-    method: service-account  # Authentication method
-    project: YOUR-DEV-PROJ  # BigQuery project ID from Google Cloud Console
-    dataset: YOUR-DEV-DATASET  # Dataset name where dbt will create tables/views
-    keyfile: /path/to/creds.json  # Path to your service account key JSON file
-    threads: 4
-    location: US
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: /absolute/path/to/dbt-duckdb-proj/warehouse.duckdb
+      schema: dev
+      threads: 4
 ```
 
+The data loader creates `warehouse.duckdb` in the project root by default, with
+`raw` for generated source tables and `dev` for dbt models. The warehouse is
+git-ignored and persists across runs.
 
----
+## 3. Generate and load source data
 
-## 3. Environment Variables Setup
-
-**File location:** `.envrc` in project root.
-
-
+Run from the project root:
 
 ```bash
-# .envrc
-
-# Dev / Default Environment (Used by dbt, Python, & VS Code mcp.json)
-export GCP_SA_DEV_CREDS="/path/to/prod-service-account.json"
-export BQ_DEV_PROJECT_ID="your-dev-proj"
-export BQ_DEV_DATASET="your-dev-dataset"
-
-# Raw/Source setup. Needed for gen_load.py
-export GCP_SA_RAW_CREDS="/path/to/raw-service-account.json" 
-export BQ_RAW_PROJECT_ID="your-raw-proj"
-export BQ_RAW_DATASET="your-raw-dataset"
-export JAFGEN_DATA_DIR="jaffle_raw_data/"
-
-# Production Environment (Optional local reference)
-export GCP_SA_PROD_CREDS="/path/to/prod-service-account.json"
-export BQ_PROD_PROJECT_ID="your-prod-proj"
-export BQ_PROD_DATASET="your-prod-dataset"
-
-
-# Agent Service Account(Keep minimal roles and permissions)
-export GCP_SA_AGENT_CREDS="/path/to/agent-service-account.json"
-
-PATH_add tools # add pathing to tools/          
-source env/bin/activate # activate python env
-source_env $HOME/keys/dbt_cloud_credentials # (Optional) Import for dbt Cloud
-
-# (Optional) just in case you need a .env
-# env | grep -E '^(GCP_SA_|BQ_|JAFGEN_)' > .env 
-
+python tools/gen_load.py --generate --date-from 2018-01-01 --date-to 2026-08-01
 ```
 
+To load CSVs already present in `jaffle_raw_data/`, omit `--generate`. Use
+`--write-mode append` to append instead of replacing the existing raw tables.
 
----
-
-## 4. dbt Cloud Credentials (Optional)
-
-**File location:** `~/keys/dbt_cloud_credentials`
-
-**How to set up:**  
-1. Obtain your dbt Cloud credentials from your dbt Cloud account
-2. Either:
-   - Create a `~/keys/dbt_cloud_credentials` file. `direnv` autoloads, OR 
-   - Export these as environment variables in your shell config (`.bashrc`, `.zshrc`, etc.)
-
-**File contents:**
+Optional `.env` settings in the project root:
 
 ```bash
-export DBT_CLOUD_ACCOUNT_ID="123456"  # Your dbt Cloud account ID
-export DBT_CLOUD_JOB_ID="789012"  # Job ID for triggering runs
-export DBT_CLOUD_API_TOKEN="dbtc_xxxxxxxxx"  # Your dbt Cloud API token (keep secret!)
-export DBT_CLOUD_HOST="cloud.getdbt.com"  # dbt Cloud hostname
+DUCKDB_PATH=warehouse.duckdb
+JAFGEN_DATA_DIR=jaffle_raw_data
 ```
 
----
+The CLI options `--warehouse` and `--data-dir` override these settings.
+Relative paths resolve from the project root.
 
+## 4. Run dbt locally
+
+After loading the CSVs, validate the connection and build:
+
+```bash
+dbt debug
+dbt build
+```
 
 ## 5. VS Code Debug Configuration (Optional)
 
-**File location:** `.vscode/launch.json`    
-
-**How to set up:**
-If you want to develop `tools/gen_load.py` further, this might be helpful for debug:
+**File location:** `.vscode/launch.json`
 
 ```json
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: Current File",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/tools/gen_load.py",
-            "args": [
-                "-g",
-                "-f", "2018-01-01",
-                "-t", "2026-08-01",
-                "-w", "WRITE_TRUNCATE"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        }
-    ]
-}
-```
-
----
-
-## 6. MCP (Model Context Protocol) Configuration (Optional)
-
-**File location:** `.vscode/mcp.json`  
-
-
-```json
-{
-  "servers": {
-    "dbt": {
-      "command": "dbt-core-mcp", 
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Generate and load local data",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/gen_load.py",
       "args": [
-        "--project-dir",
-        "${workspaceFolder}"
-      ]
-    },
-    "bigquery": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-bigquery"
+        "--generate",
+        "--date-from", "2018-01-01",
+        "--date-to", "2026-08-01",
+        "--write-mode", "replace"
       ],
-      "env": {
-        "BIGQUERY_PROJECT_ID": "{env:BQ_DEV_PROJECT_ID}",
-        "GOOGLE_APPLICATION_CREDENTIALS": "{env:GCP_SA_AGENT_CREDS}" 
-      }
+      "console": "integratedTerminal",
+      "justMyCode": true
     }
-  }
+  ]
 }
 ```
 
-## Summary Checklist
-- [ ] GCP Project and Service Accounts Setup
-- [ ] dbt Profiles Configuration `~/.dbt/profiles.yml`
-- [ ] Create `.envrc`, and optionally, `.env`
-- [ ] (Optional) `.vscode/mcp.json`
-- [ ] (Optional) Set up dbt Cloud credentials in `~/.dbt/dbt_cloud_credentials`
-- [ ] (Optional) Configure `.vscode/launch.json` with debug settings
+## 6. dbt Cloud trigger (Optional)
 
----
+The [tools/dbt-trigger](tools/dbt-trigger) helper is separate from local
+DuckDB development. If it is needed, configure the dbt Cloud account, job,
+host, and API token in the credentials file expected by that script.

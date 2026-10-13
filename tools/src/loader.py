@@ -1,14 +1,14 @@
+import duckdb
+import pandas as pd
 import typer
-from pathlib import Path
-import pandas as pd
-import pandas as pd
 
-from google.cloud.bigquery import LoadJobConfig, Client
 from src.config import Config
 
-def string_col_dtype_inspection(df: pd.DataFrame, table_name):
+
+def string_col_dtype_inspection(df: pd.DataFrame, table_name: str) -> None:
     non_string_cols = [
-        col for col in df.columns 
+        col
+        for col in df.columns
         if not pd.api.types.is_object_dtype(df[col]) and not pd.api.types.is_string_dtype(df[col])
     ]
 
@@ -19,37 +19,54 @@ def string_col_dtype_inspection(df: pd.DataFrame, table_name):
             f"All columns must be strings/objects before loading."
         )
 
-def load_data_to_bigquery(cfg: Config) -> None:
-    
+
+def quote_identifier(identifier: str) -> str:
+    return '"' + identifier.replace('"', '""') + '"'
+
+
+def load_data_to_duckdb(cfg: Config) -> None:
     csv_files = sorted(cfg.data_dir.glob("*.csv"))
 
     if not csv_files:
         typer.echo(f"No CSV files found in {cfg.data_dir}")
         raise typer.Exit(code=1)
 
-    for csv_path in csv_files:
-        table_name = csv_path.stem.split("_")[-1]
-        try:
-            ## RAW loaded tables must be strings
-            df = pd.read_csv(csv_path, dtype=str)
+    if cfg.write_mode not in {"replace", "append"}:
+        raise ValueError(f"Unsupported write mode: {cfg.write_mode}")
 
-            # added exception throw if cols not string/object dtyp
+    cfg.warehouse_path.parent.mkdir(parents=True, exist_ok=True)
+    connection = duckdb.connect(str(cfg.warehouse_path))
+    try:
+        connection.execute('CREATE SCHEMA IF NOT EXISTS "raw"')
+        connection.execute('CREATE SCHEMA IF NOT EXISTS "dev"')
+
+        for csv_path in csv_files:
+            table_name = csv_path.stem.split("_")[-1]
+            df = pd.read_csv(csv_path, dtype=str)
             string_col_dtype_inspection(df, table_name)
 
-            job_config = LoadJobConfig(
-                write_disposition=cfg.write_disposition, 
-                autodetect=True
-                )
-            table_ref = f"{cfg.dataset_ref}.{table_name}"
+            connection.register("raw_data_frame", df)
+            quoted_table = quote_identifier(table_name)
+            try:
+                if cfg.write_mode == "replace":
+                    connection.execute(
+                        f"CREATE OR REPLACE TABLE raw.{quoted_table} "
+                        "AS SELECT * FROM raw_data_frame"
+                    )
+                elif cfg.write_mode == "append":
+                    connection.execute(
+                        f"CREATE TABLE IF NOT EXISTS raw.{quoted_table} "
+                        "AS SELECT * FROM raw_data_frame WHERE FALSE"
+                    )
+                    connection.execute(
+                        f"INSERT INTO raw.{quoted_table} SELECT * FROM raw_data_frame"
+                    )
+            finally:
+                connection.unregister("raw_data_frame")
 
-            assert cfg.client is not None, "BigQuery client must be initialized before loading data."
-
-            job = cfg.client.load_table_from_dataframe(
-                df, 
-                table_ref, 
-                job_config=job_config
-                )
-            job.result()
-            print(f"   Success: Loaded {len(df)} rows into `{table_ref}`")
-        except Exception as exc:
-            print(f"   Error loading {csv_path.name}: {exc}")
+            print(
+                f"   Success: Loaded {len(df)} rows into "
+                f"`raw.{table_name}` ({cfg.warehouse_path})"
+            )
+    finally:
+        connection.close()

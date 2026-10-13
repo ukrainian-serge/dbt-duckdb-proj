@@ -1,50 +1,29 @@
 # dbt Project
 
-This project builds a Jaffle Shop-style analytics stack with dbt Fusion, BigQuery, and a lightweight local developer workflow. The model layer covers staging, intermediate logic, and marts, while the surrounding setup supports raw-data generation, service-account authentication, and dbt Cloud-triggered production runs.
+This project builds a local Jaffle Shop analytics stack with dbt and a persistent DuckDB warehouse. The model layer covers staging, intermediate logic, and marts, with jafgen source data loaded locally and dbt Cloud triggering retained as an optional separate workflow.
 
 See **[SETUP_GUIDE](./SETUP_GUIDE.md)**
 
 ## Project overview
 
 The repository includes:
-- Python utilities for raw-data generation and BigQuery ingestion
+- Python utilities for raw-data generation and local DuckDB ingestion
 - dbt models for staging, intermediate, and analytics marts
-- local environment management through direnv
-- a dbt Cloud-compatible workflow for production job triggers
-- mcp setup for linking Ai Agent to GCP
+- a persistent project-local DuckDB warehouse
+- an optional dbt Cloud workflow for production job triggers
 
-## Stack and cloud architecture
+## Local warehouse
 
-This stack centers on dbt Cloud for orchestration, with BigQuery as the warehouse and Google Cloud Platform as the underlying infrastructure. 
-The project follows a modern ELT pattern:
-- raw data files generated via [tools/gen_load.py](tools/gen_load.py) and loaded into bq
-- dbt transforms and models the data into curated reporting tables
-- dbt jobs in dbt Cloud trigger and orchestrate the production workflow
-
-This setup makes the project a good example of how local development, cloud data engineering, and deployment automation fit together in a real analytics environment.
-
-## GCP and BigQuery setup
-
-The environment follows a standard Google Cloud setup:
-- create or select a GCP project
-- enable the required APIs, especially BigQuery
-- create separate datasets for raw ingestion and transformed analytics data
-- configure IAM permissions at the project and dataset level
-
-## Local environment management with direnv
-
-Local environment variables are managed with `direnv` so credentials and project settings stay out of the repo and remain easy to switch per environment.
-
-This pattern keeps the setup consistent across local development:
-- load the `.env` or `.envrc` files automatically when entering the project directory
-- provide project-scoped secrets without committing them to source control
-- keep dbt and Python scripts aligned with the same credentials and dataset settings
+The default warehouse file is `warehouse.duckdb` in the project root. The
+loader creates a `raw` schema for jafgen CSV tables and a `dev` schema for dbt
+models. Configure the same database path in `~/.dbt/profiles.yml`; see
+[SETUP_GUIDE](./SETUP_GUIDE.md).
 
 ## Raw data generation and loading
 
-This project includes a generator/loading utility at [tools/gen_load.py](tools/gen_load.py). The script automates the Jaffle Shop raw-data workflow by generating synthetic CSV files, placing them in a configured data directory, and loading them into BigQuery using the configured service account.
-
-The project is designed to support fast iteration: the Python script and shell helpers make it easy to regenerate raw data, reload test datasets, validate transformations, and rerun targeted checks without a long setup cycle. This is especially useful during local development and dbt test loops.
+The generator/loading utility at [tools/gen_load.py](tools/gen_load.py) can
+generate synthetic CSV files and load them into the local DuckDB `raw` schema.
+It requires no cloud credentials.
 
 For more detail on the script, its environment variables, and example commands, see [tools/README.md](tools/README.md).
 
@@ -98,19 +77,19 @@ Located in [models/](models/) and organized by layer:
 
 ### Development and tooling
 - [tools/](tools/):
-   - (pre-dbt DEV) `gen_load.py`: raw data generation and BigQuery loading
+   - (local DEV) `gen_load.py`: raw data generation and DuckDB loading
    - (dbt PROD) `dbt-trigger`: dbt Cloud production job API trigger
 
 ## Quick start
 
-1. Setup GCP service accounts and projects.
-2. Create python environment.
-3. Install dependencies:
+1. Create a Python environment.
+2. Install dependencies:
    `python -m pip install -r requirements.txt`
-4. Install dbt dependencies if needed:
+3. Install dbt dependencies:
    `dbt deps`
-5. Generate data following this [tools/README.md](tools/README.md)
-6. dbt models building:
+4. Generate and load data following [tools/README.md](tools/README.md).
+5. Configure `~/.dbt/profiles.yml` using [SETUP_GUIDE](./SETUP_GUIDE.md).
+6. Build dbt models:
    `dbt debug`
    `dbt build`
 

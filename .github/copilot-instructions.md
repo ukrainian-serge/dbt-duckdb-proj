@@ -43,5 +43,4 @@ Interaction & confirmations
 - `dbt_project.yml`: project configuration
 - `tools/` data data manipulation and loading. `.py`, `.sh`
 - Refer to dbt documentation when implementing features
-- Also refer to Google Big Query documentation for SQL syntax and functions, as this project is configured to use BigQuery as the data warehouse.
-
+- Refer to dbt and DuckDB documentation for SQL syntax and functions; this project uses a local DuckDB warehouse.

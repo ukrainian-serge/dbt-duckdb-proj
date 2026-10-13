@@ -34,6 +34,8 @@ Thumbs.db
 *data/
 jaffle_raw_data/
 *.csv
+*.duckdb
+*.duckdb.wal
 
 # cache
 __pycache__/

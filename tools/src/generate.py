@@ -145,6 +145,15 @@ def process_generated_data(cfg: Config) -> None:
         value = csv_path
         data_dict[key] = value
 
+    required_tables = {"orders", "tweets", "items", "customers"}
+    missing_tables = sorted(required_tables - data_dict.keys())
+    if missing_tables:
+        typer.echo(
+            f"Missing required {cfg.prefix}_*.csv files in {cfg.data_dir}: "
+            f"{', '.join(missing_tables)}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
 
     alter_orders(data_dict['orders'], cfg)
     alter_tweets(data_dict['tweets'], cfg)
@@ -154,6 +163,5 @@ def process_generated_data(cfg: Config) -> None:
 
         
             
-
 
 

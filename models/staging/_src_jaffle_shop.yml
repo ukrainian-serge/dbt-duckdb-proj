@@ -2,9 +2,8 @@ version: 2
 
 sources:
   - name: jaffle_shop
-    description: Upload using jaffle-raw-data/load_data.py, which loaded to BQ
-    database: raw-data-503215   # The Project ID
-    schema: jaffle_shop         # The Dataset name
+    description: Jaffle Shop source data loaded into the local DuckDB raw schema
+    schema: raw
 
     tables:
       - name: customers

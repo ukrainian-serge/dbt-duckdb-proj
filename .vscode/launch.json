@@ -8,10 +8,9 @@
             "request": "launch",
             "program": "${workspaceFolder}/tools/gen_load.py",
             "args": [
-                // "-g", 
-                "-f", "2026-08-01",
-                "-t", "2026-08-05",
-                "-w", "WRITE_TRUNCATE"
+                "--date-from", "2026-08-01",
+                "--date-to", "2026-08-05",
+                "--write-mode", "replace"
             ],
             "console": "integratedTerminal",
             "justMyCode": true
