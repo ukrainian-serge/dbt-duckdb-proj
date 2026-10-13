@@ -1,6 +1,9 @@
-pandas
 python-dotenv
 typer
 jafgen
-duckdb
+
+dbt-core
 dbt-duckdb
+duckdb
+
+pandas
