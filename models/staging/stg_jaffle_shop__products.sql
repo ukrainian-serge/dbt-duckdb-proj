@@ -6,7 +6,11 @@ with
             trim(replace(name, '?', '')) as product_name,
             type as product_type,
             description,
-            safe_divide(cast(price as float64), 100) as price
+            {{ dbt_utils.safe_divide(
+                    'cast(price as ' ~ dbt.type_float() ~ ')',
+                    '100'
+                ) }} as price
+            
         from source
     )
 
