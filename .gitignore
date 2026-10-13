@@ -3,7 +3,7 @@
 .envrc
 
 ## Cloud prod for MotherDuck
-tools/dbt-trigger
+/tools/dbt-trigger
 
 #Testing
 *models/test_code.sql
@@ -41,4 +41,3 @@ jaffle_raw_data/
 
 # cache
 __pycache__/
-

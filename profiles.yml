@@ -3,7 +3,6 @@ jaffle_shop:
   outputs:
     dev:
       type: duckdb
-      method: service-account
       path: './warehouse.duckdb'   # adjust path if needed (relative to profiles.yml or absolute)
       schema: dev                  # where dbt models will build by default
       threads: 4
