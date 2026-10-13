@@ -58,27 +58,8 @@ jaffle_shop:
       threads: 4
 ```
 
-## dbt Cloud trigger helper
+## PROD Mother Duck (Further Work)
 
-The repository also includes [dbt-trigger](dbt-trigger), a shell utility for starting a dbt Cloud job from the local terminal. It is outside the local DuckDB generation/loading workflow.
-
-It looks for the dbt Cloud identifiers and API token in the credentials environment file and then calls the dbt Cloud v2 job run endpoint:
-
-```bash
-./tools/dbt-trigger -c /path/to/credentials
-./tools/dbt-trigger -m "manual run from local dev" -c /path/to/credentials
-```
-
-The script expects values such as:
-
-```bash
-DBT_CLOUD_ACCOUNT_ID=12345
-DBT_CLOUD_JOB_ID=67890
-DBT_CLOUD_HOST=cloud.getdbt.com
-DBT_CLOUD_API_TOKEN=your_token_here
-```
-
-This makes it easy to quickly kick off a dbt Cloud production job after local validation, while keeping the trigger logic simple and repeatable.
 
 ## Related documentation
 

@@ -87,8 +87,6 @@ dbt build
 }
 ```
 
-## 6. dbt Cloud trigger (Optional)
+## 6. PROD Mother Duck (Further Work)
 
-The [tools/dbt-trigger](tools/dbt-trigger) helper is separate from local
-DuckDB development. If it is needed, configure the dbt Cloud account, job,
-host, and API token in the credentials file expected by that script.
+The [tools/dbt-trigger](tools/dbt-trigger)

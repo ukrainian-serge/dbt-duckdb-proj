@@ -27,11 +27,6 @@ It requires no cloud credentials.
 
 For more detail on the script, its environment variables, and example commands, see [tools/README.md](tools/README.md).
 
-## dbt Cloud and trigger automation
-
-The stack includes dbt Cloud, which serves as the orchestration layer for production runs and deployment automation. The repository also includes a helper script, [tools/dbt-trigger](tools/dbt-trigger), which triggers a dbt Cloud production environment for execution.
-
-This script is useful when a developer wants to start a dbt Cloud job without manually opening the UI, making it easy to move from local validation to cloud execution in a repeatable way.
 
 ## Project structure
 
@@ -78,7 +73,6 @@ Located in [models/](models/) and organized by layer:
 ### Development and tooling
 - [tools/](tools/):
    - (local DEV) `gen_load.py`: raw data generation and DuckDB loading
-   - (dbt PROD) `dbt-trigger`: dbt Cloud production job API trigger
 
 ## Quick start
 
@@ -103,6 +97,4 @@ Located in [models/](models/) and organized by layer:
 
 ## Resources
 
-- dbt docs: https://docs.getdbt.com/docs/introduction
-- dbt Discourse: https://discourse.getdbt.com/
 - Jaffle Shop generator: https://github.com/dbt-labs/jaffle-shop-generator

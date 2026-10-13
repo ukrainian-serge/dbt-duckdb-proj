@@ -22,12 +22,12 @@
     },
 
     "duckdb.databases": [
-
         {
             "alias": "warehouse",
             "type": "file",
             "path": "/home/serge/projects/dbt-duckdb-proj/data/warehouse.duckdb",
-            "readOnly": false
+            "readOnly": false,
+            "attached": false
         }
     ],
 

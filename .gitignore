@@ -1,7 +1,9 @@
 # Environment variables 
 .env
 .envrc
-profiles.yml
+
+## Cloud prod for MotherDuck
+tools/dbt-trigger
 
 #Testing
 *models/test_code.sql
@@ -40,5 +42,3 @@ jaffle_raw_data/
 # cache
 __pycache__/
 
-# permissions testing script
-.list-gcp-permissions
