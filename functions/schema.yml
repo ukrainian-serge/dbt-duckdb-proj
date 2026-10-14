@@ -3,29 +3,29 @@ functions:
     description: My UDF that returns the result of dividing two numbers, with error handling for division by zero.
     config:
       schema: shared_udfs
-      database: dbt-dev-503215
+      enabled: false
 
     arguments:
       - name: numerator
-        data_type: FLOAT64
+        data_type: DOUBLE
         description: The number to be divided
 
       - name: denominator
-        data_type: FLOAT64
+        data_type: DOUBLE
         description: The number by which to divide
 
     returns:
-      data_type: FLOAT64
+      data_type: DOUBLE
 
   - name: mask_name
     description: udf that masks a name by replacing all but the first character with asterisks.
     config:
       schema: shared_udfs
-      database: dbt-dev-503215
+      enabled: false
 
     arguments:
       - name: input_name
-        data_type: STRING
+        data_type: VARCHAR
         description: "The first or last name to mask."
     returns:
-      data_type: STRING
+      data_type: VARCHAR
