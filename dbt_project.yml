@@ -37,7 +37,7 @@ models:
         layer: marts
         managed_by: dbt_dev
 
-    python_demo:    # takes over 20 minutes of startup time to run so we disable it by default
+    python_demo:    # Python models not supported in Fusion CLI
       +enabled: false
 
 seeds:
