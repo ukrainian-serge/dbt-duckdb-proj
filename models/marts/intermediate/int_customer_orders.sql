@@ -1,3 +1,4 @@
+{# Partition and cluster configuration commented out for DuckDB compatibility #}
 {# {{
     config(
         materialized="table",
@@ -45,9 +46,10 @@ with
     final as (
         select
             *,
-            {{ function("divide_udf") }} (
-                customer_lifetime_value, customer_lifetime_order_count
-            ) as customer_avg_non_returned_order_value
+            {{ dbt_utils.safe_divide(
+                    'customer_lifetime_value',
+                    'customer_lifetime_order_count'
+                ) }} as customer_avg_non_returned_order_value
         from joined
     )
 

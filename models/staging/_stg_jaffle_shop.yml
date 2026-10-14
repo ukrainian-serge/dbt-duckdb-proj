@@ -45,10 +45,10 @@ models:
                 field: customer_id
       - name: ordered_at
         description: Date of the order
-        data_type: datetime
+        data_type: timestamp
       - name: days_since_order
         description: Days delta between ordered_at and current_date
-        data_type: int64
+        data_type: integer
       - name: store_id
         description: Identifier for the store where the order was placed
         data_type: string
@@ -56,13 +56,13 @@ models:
           - not_null
       - name: subtotal
         description: Subtotal amount for the order
-        data_type: float64
+        data_type: numeric
       - name: tax_paid
         description: Tax amount paid for the order
-        data_type: float64
+        data_type: numeric
       - name: order_total
         description: Total amount for the order # maybe including tax?
-        data_type: float64
+        data_type: numeric
 
   - name: stg_jaffle_shop__items
     description: Staging layer for Jaffle Shop items data
@@ -120,7 +120,7 @@ models:
                     ]
       - name: price
         description: Product price
-        data_type: float64
+        data_type: numeric
         data_tests:
           - not_null
       - name: description
@@ -142,10 +142,10 @@ models:
         data_type: string
         description: Name of store
       - name: opened_at
-        data_type: datetime
+        data_type: timestamp
         description: Date when the store was opened
       - name: tax_rate
-        data_type: float64
+        data_type: numeric
         description: Tax rate for the store. Used to calculate tax for orders placed at this store.
 
   - name: stg_jaffle_shop__supplies
@@ -164,7 +164,7 @@ models:
         data_tests:
           - not_null
       - name: cost
-        data_type: float64
+        data_type: numeric
         description: cost of supplies
         data_tests:
           - not_null
@@ -196,7 +196,7 @@ models:
         data_type: string
         description: user identifier for the user who posted the tweet
       - name: tweeted_at
-        data_type: datetime
+        data_type: timestamp
         description: timestamp when the tweet was posted
         data_tests:
           - not_null

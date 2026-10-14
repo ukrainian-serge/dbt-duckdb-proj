@@ -47,7 +47,12 @@ with
     ),
 
     cte_final as (
-        select coalesce(store_name, 'TOTAL') as store_name, * except (store_name)
+        select 
+            coalesce(store_name, 'TOTAL') as store_name
+            {% for product_name in product_names -%}
+            , {{ product_name | replace("-", "_") | replace(" ", "_") | lower }}
+            {% endfor %}
+            , total
         from cte_pivot
     )
 
