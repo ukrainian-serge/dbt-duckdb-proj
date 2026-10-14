@@ -1,45 +1,14 @@
-{# {% set get_products_query %}
-    select distinct product_name 
-    from {{ ref("stg_jaffle_shop__products") }} 
-    where product_name is not null 
-    order by 1
-{% endset %}
+-- Analysis: Test patterns and exploration queries
+-- Purpose: Ad-hoc queries for testing and data exploration
+-- This file can be used for temporary analysis work during development
 
-{% if execute %}
-    {% set results = run_query(get_products_query) %}
-    {% set product_names = results.columns[0].values() %}
-{% endif %} #}
-
-{# If the query returns empty or runs during dbt compile, use default fallbacks #}
-{# {% if not product_names or product_names | length == 0 %}
-    {% set product_names = ["item_a", "item_b"] %}
-{% endif %} #}
-
-{# select
-    store_id,
-    {% for product_name in product_names %}
-        sum(case when product_name = '{{ product_name }}' then order_total else 0 end)
-        as total_{{ product_name | replace("-", "_") | replace(" ", "_") | lower }}_sales
-        {% if not loop.last %},{% endif %}
-    {% endfor %}
-
+-- Example: Orders summary by store
+select
+  store_id,
+  count(*) as order_count,
+  count(distinct customer_id) as unique_customers,
+  sum(order_total) as total_sales,
+  avg(order_total) as avg_order_value
 from {{ ref("stg_jaffle_shop__orders") }}
-group by 1 #}
-
-{# SELECT 
-  grantee AS principal,
-  role_name AS role,
-  table_catalog AS project_id,
-  table_schema AS dataset_name
-FROM `dbt-dev-503215.INFORMATION_SCHEMA.SCHEMATA_SHARED_TO_SUBSUMED`
-WHERE table_schema = 'int_store_products'; #}
-
-{# {% if execute %}
-    {{ log("\n=== AVAILABLE MODEL / NODE KEYS ===", info=True) }}
-    {% for key in model.keys() | sort %}
-        {{ log(" - " ~ key, info=True) }}
-    {% endfor %}
-    {{ log("===================================\n", info=True) }}
-{% endif %} #}
-
-{% find_%}
+group by store_id
+order by total_sales desc

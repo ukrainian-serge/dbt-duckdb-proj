@@ -1,18 +1,20 @@
+-- Analysis: Audit fct_customer_orders model
+-- Purpose: Compare model structure and row counts for data quality checks
+-- Note: This analysis is a template for auditing transformations
 
-
-{% set old_relation = adapter.get_relation(
-      database = "dbt-dev-503215",
-      schema = "dbt_skamilchu",
-      identifier = "fct_customer_orders_legacy"
-) %} 
-
-{% set dbt_relation = ref('fct_customer_orders') %} 
+{% set dbt_relation = ref('fct_customer_orders') %}
 
 {% if execute %}
-{{ audit_helper.compare_relations(
-    a_relation = old_relation,
-    b_relation = dbt_relation,
-    primary_key = "order_id",
-) }}
+  {% set columns = dbt_relation.columns %}
+  {{ log("=" ~ " AUDIT: fct_customer_orders ", info=True) }}
+  {{ log("Column count: " ~ columns | length, info=True) }}
+  {% for col in columns %}
+    {{ log("  - " ~ col.name ~ " (" ~ col.dtype ~ ")", info=True) }}
+  {% endfor %}
+{% endif %}
 
-{% endif %} 
+-- Display row count and sample data
+select
+  count(*) as total_rows,
+  count(distinct order_id) as distinct_orders
+from {{ ref('fct_customer_orders') }}

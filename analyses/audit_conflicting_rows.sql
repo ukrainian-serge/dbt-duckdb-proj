@@ -1,49 +1,36 @@
-{% set old_relation = adapter.get_relation(
-    database="dbt-dev-503215",
-    schema="dbt_skamilchu",
-    identifier="fct_customer_orders_legacy",
-) %}
+-- Analysis: Audit conflicting rows
+-- Purpose: Identify rows with potential data quality issues or differences
+-- This is a template for comparing versions of a model
+
 {% set dbt_relation = ref("fct_customer_orders") %}
+
 {% if execute %}
-    with
-        audit_diffs as (
-            {{
-                audit_helper.compare_all_columns(
-                    a_relation=old_relation,
-                    b_relation=dbt_relation,
-                    primary_key="order_id",
-                    summarize=false,
-                )
-            }}
-        ),
-        conflicting_rows as (
-            select distinct primary_key as order_id
-            from audit_diffs
-            where conflicting_values = true
-        ),
-        final as (
-            select
-                a.order_id
-                a.fdos as legacy_fdos,
-                b.fdos as dbt_fdos,
-                datetime_diff(b.fdos, a.fdos, hour) as fdos_diff
-            from
-                (
-                    select order_id, fdos
-                    from {{ old_relation }}
-                    inner join conflicting_rows using (order_id)
-                ) as a
-            inner join
-                (
-                    select order_id, fdos
-                    from {{ dbt_relation }}
-                    inner join conflicting_rows using (order_id)
-                ) as b
-                on a.order_id = b.order_id
-        )
-    select *
-    from final
+  -- Template query to find potential issues in model data
+  with data_quality_checks as (
+    select
+      order_id,
+      customer_id,
+      order_placed_at,
+      count(*) as row_count
+    from {{ dbt_relation }}
+    group by order_id, customer_id, order_placed_at
+    having count(*) > 1  -- find duplicate order_ids
+  )
+  select
+    order_id,
+    customer_id,
+    order_placed_at,
+    row_count,
+    'duplicate_key' as issue_type
+  from data_quality_checks
+  order by row_count desc
+
 {% else %}
-    -- parse-time placeholder
-    select cast(null as string) as order_id
+  -- parse-time placeholder
+  select
+    cast(null as string) as order_id,
+    cast(null as string) as customer_id,
+    cast(null as timestamp) as order_placed_at,
+    cast(null as integer) as row_count,
+    cast(null as string) as issue_type
 {% endif %}
