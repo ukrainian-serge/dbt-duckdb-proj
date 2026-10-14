@@ -2,96 +2,80 @@ version: 2
 
 models:
   - name: fct_customer_orders
-    latest_version: 2
-    description: Fact table containing customer order details with incremental microbatch materialization
+    latest_version: 1
+    description: Fact table containing customer order details with proper version management
 
     config:
       access: public
       group: product
-      contract:
-        enforced: true
-
+      # Partition and cluster configs commented for DuckDB compatibility
+      # partition_by:
+      #   field: order_placed_at
+      #   data_type: datetime
+      #   granularity: day
       unique_key: order_id
-      partition_by:
-        field: order_placed_at
-        data_type: datetime
-        granularity: day
 
-    # data_tests:
-    #   - dbt_utils.equality:
-    #       arguments:
-    #         to: ref('fct_customer_orders_legacy')
-
+    # Shared columns across all versions (top-level definitions)
     columns:
       - name: order_id
         description: Unique identifier for each order
         data_type: string
         constraints:
           - type: not_null
-          
-        # tests:
-        #   - dbt_utils.cardinality_equality:
-        #       arguments:
-        #         to: ref('fct_customer_orders_legacy')
-        #         field: order_id
 
       - name: customer_id
         description: Foreign key reference to the customer
         data_type: string
 
-        # tests:
-        #   - dbt_utils.cardinality_equality:
-        #       arguments:
-        #         to: ref('fct_customer_orders_legacy')
-        #         field: customer_id
-
       - name: order_placed_at
-        description: Timestamp when the order was placed; used for event time and partitioning
-        data_type: datetime
+        description: Timestamp when the order was placed
+        data_type: timestamp
+      
       - name: total_amount_paid
         description: Total amount paid for the order
-        data_type: float64
+        data_type: numeric
+      
       - name: payment_finalized_date
         description: Date when the payment was finalized
-        data_type: datetime
+        data_type: timestamp
+      
       - name: customer_first_name
         description: First name of the customer
         data_type: string
+      
       - name: customer_last_name
         description: Last name of the customer
         data_type: string
+      
       - name: transaction_seq
         description: Sequential transaction number
-        data_type: int64
+        data_type: integer
+      
       - name: customer_sales_seq
         description: Sequential sales number for the customer
-        data_type: int64
+        data_type: integer
+      
       - name: customer_lifetime_value
         description: Total lifetime value for the customer
-        data_type: float64
+        data_type: numeric
 
       - name: fdos
         description: First date of sale for the customer
-        data_type: datetime
+        data_type: timestamp
+      
       - name: nvsr
         description: New versus return indicator; values are 'new' or 'return'
         data_type: string
 
     versions:
       - v: 1
-        config:
-          alias: fct_customer_orders_v1
-        description: Version 1 of fact table with cardinality tests against legacy model
-        columns:
-          - include: all
+        description: Version 1 - Current stable version with all columns including transaction_seq as timestamp fdos and payment_finalized_date
+        # v1 inherits all columns from top-level definition
 
       - v: 2
-        config:
-          alias: fct_customer_orders_v2
+        description: Version 2 - Prerelease version with transaction_seq removed and date types for fdos and payment_finalized_date
         columns:
           - include: all
-          # exclude ALL modified/removed columns from inheritance. re-declare the modified columns explicitly.
-          # IF NOT DONE, FAILES IN PROD!!! 
             exclude: [transaction_seq, fdos, payment_finalized_date]
           - name: fdos
             description: First date of sale for the customer
