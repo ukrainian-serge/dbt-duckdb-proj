@@ -2,6 +2,22 @@ version: 2
 
 macros:
 
+  - name: string_split_array
+    description: Platform-agnostic macro to split a string into an array across different data warehouses (DuckDB, Snowflake, BigQuery, Postgres).
+    arguments:
+      - name: string_expr
+        description: The string to split (column name or expression).
+      - name: delimiter
+        description: The delimiter character(s) to split on (include quotes, e.g., "' '").
+
+  - name: array_concat_string
+    description: Platform-agnostic macro to concatenate array elements into a string across different data warehouses (DuckDB, Snowflake, BigQuery, Postgres).
+    arguments:
+      - name: array_expr
+        description: The array expression to concatenate (e.g., array_slice(...) or ARRAY[...]).
+      - name: delimiter
+        description: The delimiter to use between elements (include quotes, e.g., "' '").
+
   - name: clean_stale_models
     description: Drops unused tables/views from a schema based on last modified time.
     arguments:

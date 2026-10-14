@@ -12,8 +12,8 @@ cleaned AS (
         id AS customer_id,
         TRIM(
             REGEXP_REPLACE(
-                REGEXP_REPLACE(name, r'[^a-zA-Z\s]', ''),
-                r'\s+',
+                REGEXP_REPLACE(name, '[^a-zA-Z\s]', ''),
+                '\s+',
                 ' '
             )
         ) AS clean_name
@@ -24,8 +24,8 @@ cleaned AS (
 tokens AS (
     SELECT
         customer_id,
-        SPLIT(clean_name, ' ') AS name_parts,
-        ARRAY_LENGTH(SPLIT(clean_name, ' ')) AS part_count
+        {{ string_split_array('clean_name', "' '") }} AS name_parts,
+        ARRAY_LENGTH({{ string_split_array('clean_name', "' '") }}) AS part_count
     FROM
         cleaned
 ),
@@ -36,26 +36,22 @@ final AS (
         
         -- First Name: First item (if present)
         CASE 
-            WHEN part_count >= 1 THEN name_parts[SAFE_OFFSET(0)]
+            WHEN part_count >= 1 THEN name_parts[1]
             ELSE NULL 
         END AS first_name,
         
         -- Middle Name: Assigned ONLY if the array has 3 or more items
         CASE 
-            WHEN part_count >= 3 THEN name_parts[SAFE_OFFSET(1)]
+            WHEN part_count >= 3 THEN name_parts[2]
             ELSE NULL 
         END AS middle_name,
         
         -- Last Name: 
-        -- If 2 parts: item at index 1
-        -- If 3+ parts: re-joins everything from index 2 onwards (or index 1 if 2 parts)
+        -- If 2 parts: item at index 2 (second element, 1-based indexing)
+        -- If 3+ parts: joins everything from index 3 onwards
         CASE 
-            WHEN part_count = 2 THEN name_parts[SAFE_OFFSET(1)]
-            WHEN part_count >= 3 THEN (
-                SELECT STRING_AGG(part, ' ' ORDER BY offset)
-                FROM UNNEST(name_parts) AS part WITH OFFSET offset
-                WHERE offset >= 2
-            )
+            WHEN part_count = 2 THEN name_parts[2]
+            WHEN part_count >= 3 THEN {{ array_concat_string('array_slice(name_parts, 3, -1)', "' '") }}
             ELSE NULL 
         END AS last_name
 
