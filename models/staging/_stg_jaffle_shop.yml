@@ -48,7 +48,7 @@ models:
         data_type: timestamp
       - name: days_since_order
         description: Days delta between ordered_at and current_date
-        data_type: integer
+        data_type: bigint
       - name: store_id
         description: Identifier for the store where the order was placed
         data_type: string
@@ -56,13 +56,13 @@ models:
           - not_null
       - name: subtotal
         description: Subtotal amount for the order
-        data_type: numeric
+        data_type: integer
       - name: tax_paid
         description: Tax amount paid for the order
-        data_type: numeric
+        data_type: integer
       - name: order_total
         description: Total amount for the order # maybe including tax?
-        data_type: numeric
+        data_type: integer
 
   - name: stg_jaffle_shop__items
     description: Staging layer for Jaffle Shop items data
@@ -120,7 +120,7 @@ models:
                     ]
       - name: price
         description: Product price
-        data_type: numeric
+        data_type: double
         data_tests:
           - not_null
       - name: description
@@ -145,7 +145,7 @@ models:
         data_type: timestamp
         description: Date when the store was opened
       - name: tax_rate
-        data_type: numeric
+        data_type: double
         description: Tax rate for the store. Used to calculate tax for orders placed at this store.
 
   - name: stg_jaffle_shop__supplies
@@ -164,7 +164,7 @@ models:
         data_tests:
           - not_null
       - name: cost
-        data_type: numeric
+        data_type: double
         description: cost of supplies
         data_tests:
           - not_null

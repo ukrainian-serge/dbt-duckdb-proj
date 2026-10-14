@@ -33,7 +33,7 @@ models:
       
       - name: total_amount_paid
         description: Total amount paid for the order
-        data_type: numeric
+        data_type: double
       
       - name: payment_finalized_date
         description: Date when the payment was finalized
@@ -49,15 +49,15 @@ models:
       
       - name: transaction_seq
         description: Sequential transaction number
-        data_type: integer
+        data_type: bigint
       
       - name: customer_sales_seq
         description: Sequential sales number for the customer
-        data_type: integer
+        data_type: bigint
       
       - name: customer_lifetime_value
         description: Total lifetime value for the customer
-        data_type: numeric
+        data_type: double
 
       - name: fdos
         description: First date of sale for the customer
