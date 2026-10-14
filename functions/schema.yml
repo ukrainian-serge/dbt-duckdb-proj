@@ -1,31 +1,10 @@
-functions:
-  - name: divide_udf
-    description: My UDF that returns the result of dividing two numbers, with error handling for division by zero.
-    config:
-      schema: shared_udfs
-      enabled: false
-
-    arguments:
-      - name: numerator
-        data_type: DOUBLE
-        description: The number to be divided
-
-      - name: denominator
-        data_type: DOUBLE
-        description: The number by which to divide
-
-    returns:
-      data_type: DOUBLE
-
-  - name: mask_name
-    description: udf that masks a name by replacing all but the first character with asterisks.
-    config:
-      schema: shared_udfs
-      enabled: false
-
-    arguments:
-      - name: input_name
-        data_type: VARCHAR
-        description: "The first or last name to mask."
-    returns:
-      data_type: VARCHAR
+# Functions currently disabled - not referenced in any models
+# Fusion CLI does not respect 'enabled: false' config, so functions must be removed from this list
+# to prevent build errors. Function implementations remain in divide_udf.sql and mask_name.sql
+# for future reference.
+#
+# Disabled functions:
+# - divide_udf: Safe division with null on zero denominator
+# - mask_name: Name masking function (replaces all but first char with asterisks)
+#
+# To re-enable, add functions back to this file with proper DuckDB CREATE FUNCTION syntax
