@@ -18,6 +18,17 @@ macros:
       - name: delimiter
         description: The delimiter to use between elements (include quotes, e.g., "' '").
 
+  - name: date_diff_days
+    description: Platform-agnostic macro to calculate the difference in days between two dates across different data warehouses (DuckDB, Snowflake, BigQuery, Postgres, Redshift).
+    arguments:
+      - name: start_date
+        description: The start date/timestamp (column name or expression).
+      - name: end_date
+        description: The end date/timestamp (column name or expression).
+
+  - name: type_datetime
+    description: Platform-agnostic macro to return the correct datetime/timestamp type for the target adapter (DuckDB, Snowflake, BigQuery, Postgres, Redshift).
+
   - name: clean_stale_models
     description: Drops unused tables/views from a schema based on last modified time.
     arguments:

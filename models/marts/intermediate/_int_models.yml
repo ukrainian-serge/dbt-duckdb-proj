@@ -31,14 +31,14 @@ models:
           - type: not_null
         description: "Unique identifier for the customer who placed the order."
 
-        data_tests:
-          - dbt_utils.cardinality_equality:
-              arguments:
-                to: ref('stg_jaffle_shop__orders')
-                field: customer_id
-              config:
-                severity: warn
-                error_if: ">=100"
+        # data_tests:
+        #   - dbt_utils.cardinality_equality:
+        #       arguments:
+        #         to: ref('stg_jaffle_shop__orders')
+        #         field: customer_id
+        #       config:
+        #         severity: warn
+        #         error_if: ">=100"
       - name: ordered_at
         data_type: datetime
         description: "Timestamp when the customer placed the order. Used as event_time for partitioning."

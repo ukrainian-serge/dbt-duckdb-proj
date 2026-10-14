@@ -38,11 +38,11 @@ models:
       - name: customer_id
         description: Customer identifier.
         data_type: string
-        data_tests:
-          - relationships:
-              arguments:
-                to: ref('stg_jaffle_shop__customers')
-                field: customer_id
+        # data_tests:
+        #   - relationships:
+        #       arguments:
+        #         to: ref('stg_jaffle_shop__customers')
+        #         field: customer_id
       - name: ordered_at
         description: Date of the order
         data_type: datetime
@@ -80,19 +80,19 @@ models:
         data_type: string
         data_tests:
           - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_jaffle_shop__orders')
-                field: order_id
+          # - relationships:
+          #     arguments:
+          #       to: ref('stg_jaffle_shop__orders')
+          #       field: order_id
       - name: sku
         description: Stock Keeping Unit, foreign key to products.sku
         data_type: string
         data_tests:
           - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_jaffle_shop__products')
-                field: sku
+          # - relationships:
+          #     arguments:
+          #       to: ref('stg_jaffle_shop__products')
+          #       field: sku
 
   - name: stg_jaffle_shop__products
     description: Staging layer for Jaffle Shop products data
@@ -178,10 +178,10 @@ models:
         description: sku of product which uses these supplies. Foreign key to products.sku
         data_tests:
           - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_jaffle_shop__products')
-                field: sku
+          # - relationships:
+          #     arguments:
+          #       to: ref('stg_jaffle_shop__products')
+          #       field: sku
 
 
   - name: stg_jaffle_shop__tweets

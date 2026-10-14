@@ -6,7 +6,10 @@ with
             name as supplies_name,
             cast(perishable as boolean) as perishable,
             sku,
-            safe_divide(cast(cost as float64), 100) as cost
+            {{ dbt_utils.safe_divide(
+                    'cast(cost as ' ~ dbt.type_float() ~ ')',
+                    '100'
+                ) }} as cost
         from source
     )
 
