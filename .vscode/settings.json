@@ -13,9 +13,13 @@
 
     "python.analysis.autoImportCompletions": true,
 
-    // "files.exclude": {
-    //     "**/.git": false
-    // },
+
+    // for searching dbt Core model runs 
+    "search.exclude": {
+        "**/target/compiled": false,
+        "**/target/run": false
+    },
+
 
     "files.associations": {
         "*.sql": "jinja-sql",
