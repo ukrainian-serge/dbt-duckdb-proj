@@ -18,6 +18,9 @@ unit_tests:
 
   - name: test_valid_order_date_diff
     model: stg_jaffle_shop__orders
+    overrides:
+      macros:
+        dbt.current_timestamp: "cast('2026-01-10' as timestamp)" # mock current_date
     given:
       - input:  source('jaffle_shop', 'orders')
         rows:
@@ -25,6 +28,6 @@ unit_tests:
           - { id: 2, ordered_at: '2026-01-10' }
     expect: 
       rows:
-          - { order_id: 1, days_since_order: 286 }
-          - { order_id: 2, days_since_order: 277 }
+          - { order_id: 1, days_since_order: 9 }
+          - { order_id: 2, days_since_order: 0 }
 
