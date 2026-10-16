@@ -48,7 +48,7 @@ models:
         data_type: timestamp
       - name: days_since_order
         description: Days delta between ordered_at and current_date
-        data_type: bigint
+        data_type: double
       - name: store_id
         description: Identifier for the store where the order was placed
         data_type: string
