@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: fct_customer_orders
-    latest_version: 1
+    latest_version: 2
     description: Fact table containing customer order details with proper version management
 
     config:
@@ -70,7 +70,6 @@ models:
     versions:
       - v: 1
         description: Version 1 - Current stable version with all columns including transaction_seq as timestamp fdos and payment_finalized_date
-        # v1 inherits all columns from top-level definition
 
       - v: 2
         description: Version 2 - Prerelease version with transaction_seq removed and date types for fdos and payment_finalized_date
