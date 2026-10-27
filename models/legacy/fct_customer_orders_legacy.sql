@@ -1,7 +1,8 @@
 {{
   config(
     materialized = 'table',
-    full_refresh=true
+    full_refresh=true,
+    enabled=false
     )
 }}
 

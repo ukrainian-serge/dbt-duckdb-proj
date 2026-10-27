@@ -51,3 +51,4 @@ exposures:
 
 flags:
   require_generic_test_arguments_property: true
+  latest_version_pointer_enabled_by_default: true
